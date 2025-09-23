@@ -1,0 +1,177 @@
+CREATE TABLE Companies (
+  company_id SERIAL PRIMARY KEY,
+  Company_name VARCHAR UNIQUE NOT NULL,
+  activ BOOLEAN DEFAULT TRUE
+);
+---------------------------------
+CREATE TABLE Products (
+  Product_id SERIAL PRIMARY KEY,
+  product_name  VARCHAR UNIQUE NOT NULL,
+  company_id VARCHAR,
+  description VARCHAR,
+  price FLOAT,
+  active BOOLEAN DEFAULT TRUE
+  FOREIGN KEY (company_id) REFERENCES Companies(company_id) ON DELETE CASCADE
+);
+---------------------------------
+CREATE TABLE Warranties (
+  warranty_id SERIAL PRIMARY KEY,
+  waranty_months INT NOT NULL,
+  Product_id INT
+  FOREIGN KEY (Product_id) REFERENCES Products(product_id) ON DELETE CASCADE
+);
+---------------------------------
+CREATE TABLE Categories (
+  category_id SERIAL PRIMARY KEY,
+  Category_name VARCHAR UNIQUE NOT NULL
+);
+---------------------------------
+CREATE TABLE products_categories_xref (
+    product_id INT REFERENCES products(product_id) ON DELETE CASCADE,
+    category_id INT REFERENCES categories(category_id) ON DELETE CASCADE,
+    PRIMARY KEY(product_id, category_id)
+);
+=====================================
+
+Create:
+
+a single record in the companies table:
+
+INSERT INTO Companies (company_name, active)
+VALUES ('TechCorp', TRUE);
+---------------------------------
+a single record in the categories table:
+
+INSERT INTO Categories (category_name)
+VALUES ('Electronics');
+---------------------------------
+a single record in the products table:
+
+INSERT INTO Products (product_name, company_id, description, price, active)
+VALUES ('Smartphone X', 1, 'Latest model smartphone', 699.99, TRUE);
+---------------------------------
+a single record in the warranties table:
+
+INSERT INTO Warranties (warranty_months, product_id)
+VALUES (12, 1);
+---------------------------------
+a single record in the products_categories table:
+
+INSERT INTO products_categories_xref (product_id, category_id)
+VALUES (1, 1);
+=====================================
+
+Read:
+
+All records in the Companies table:
+
+SELECT * FROM Companies;
+---------------------------------
+All records in the Categories table:
+
+SELECT * FROM Categories;
+---------------------------------
+All records in the Products table:
+
+SELECT * FROM Products;
+---------------------------------
+All records in the Warranties table: 
+
+SELECT * FROM Warranties;
+---------------------------------
+All active products:
+
+SELECT * FROM Products
+WHERE active = TRUE;
+---------------------------------
+All products with a particular company_id:
+
+SELECT * FROM Products
+WHERE company_id = 1;
+---------------------------------
+A single company record by ID:
+
+SELECT * FROM Companies
+WHERE company_id = 1;
+---------------------------------
+A single category record by ID and all its associated products:
+
+SELECT c.category_id, c.category_name, p.product_id, p.product_name
+FROM Categories c
+LEFT JOIN products_categories_xref pcx ON c.category_id = pcx.category_id
+LEFT JOIN Products p ON pcx.product_id = p.product_id
+WHERE c.category_id = 1;
+---------------------------------
+A single product record by ID (with warranty and categories):
+
+SELECT p.product_id, p.product_name, p.description, p.price, p.active,
+       w.warranty_id, w.warranty_months,
+       c.category_id, c.category_name
+FROM Products p
+LEFT JOIN Warranties w ON p.product_id = w.product_id
+LEFT JOIN products_categories_xref pcx ON p.product_id = pcx.product_id
+LEFT JOIN Categories c ON pcx.category_id = c.category_id
+WHERE p.product_id = 1;
+----------------------------------
+A single warranty record by ID
+
+SELECT * FROM Warranties
+WHERE warranty_id = 1;
+=====================================
+
+UPDATE:
+
+Update one or more fields in a Companies record:
+
+UPDATE Companies
+SET company_name = 'TechCorp International',
+    active = FALSE
+WHERE company_id = 1;
+----------------------------
+Update one or more fields in a Categories record:
+
+UPDATE Categories
+SET category_name = 'Consumer Electronics'
+WHERE category_id = 1;
+-------------------------------
+Update one or more fields in a Products record:
+
+UPDATE Products
+SET product_name = 'Smartphone X Pro',
+    price = 799.99,
+    active = TRUE
+WHERE product_id = 1;
+--------------------------------
+Update one or more fields in a Warranties record:
+
+UPDATE Warranties
+SET warranty_months = 24
+WHERE warranty_id = 1;
+------------------------------
+Update one or more fields in a ProductsCategoriesXref record:
+
+UPDATE products_categories_xref
+SET category_id = 2
+WHERE product_id = 1 AND category_id = 1;
+=====================================
+DELETE:
+
+Delete a record in the Products table by product_id:
+
+DELETE FROM Products
+WHERE product_id = 1;
+---------------------------------
+Delete a record in the Categories table by category_id:
+
+DELETE FROM Categories
+WHERE category_id = 1;
+--------------------------------
+Delete a record in the Companies table by company_id:
+
+DELETE FROM Companies
+WHERE company_id = 1;
+--------------------------------
+Delete a record in the Warranties table by warranty_id:
+
+DELETE FROM Warranties
+WHERE warranty_id = 1;
