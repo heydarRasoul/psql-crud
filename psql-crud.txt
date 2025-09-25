@@ -1,36 +1,36 @@
-CREATE TABLE Companies (
+CREATE TABLE IF NOT EXISTS Companies (
   company_id SERIAL PRIMARY KEY,
-  Company_name VARCHAR UNIQUE NOT NULL,
-  activ BOOLEAN DEFAULT TRUE
+  company_name VARCHAR UNIQUE NOT NULL,
+  active BOOLEAN DEFAULT TRUE
 );
 ---------------------------------
-CREATE TABLE Products (
-  Product_id SERIAL PRIMARY KEY,
-  product_name  VARCHAR UNIQUE NOT NULL,
-  company_id VARCHAR,
+CREATE TABLE IF NOT EXISTS Products (
+  product_id SERIAL PRIMARY KEY,
+  product_name VARCHAR UNIQUE NOT NULL,
+  company_id INT REFERENCES companies(company_id) ON DELETE CASCADE,
   description VARCHAR,
   price FLOAT,
   active BOOLEAN DEFAULT TRUE
-  FOREIGN KEY (company_id) REFERENCES Companies(company_id) ON DELETE CASCADE
 );
 ---------------------------------
-CREATE TABLE Warranties (
+CREATE TABLE IF NOT EXISTS Warranties (
   warranty_id SERIAL PRIMARY KEY,
-  waranty_months INT NOT NULL,
-  Product_id INT
-  FOREIGN KEY (Product_id) REFERENCES Products(product_id) ON DELETE CASCADE
+  warranty_months INT NOT NULL,
+  product_id INT REFERENCES products(product_id) ON DELETE CASCADE
 );
 ---------------------------------
-CREATE TABLE Categories (
+CREATE TABLE IF NOT EXISTS Categories (
   category_id SERIAL PRIMARY KEY,
-  Category_name VARCHAR UNIQUE NOT NULL
+  category_name VARCHAR UNIQUE NOT NULL
 );
 ---------------------------------
-CREATE TABLE products_categories_xref (
-    product_id INT REFERENCES products(product_id) ON DELETE CASCADE,
-    category_id INT REFERENCES categories(category_id) ON DELETE CASCADE,
-    PRIMARY KEY(product_id, category_id)
+CREATE TABLE IF NOT EXISTS ProductsCategoriesXref (
+  product_id INT REFERENCES products(product_id) ON DELETE CASCADE,
+  category_id INT REFERENCES categories(category_id) ON DELETE CASCADE,
+  PRIMARY KEY(product_id, category_id)
 );
+
+
 =====================================
 
 Create:
@@ -44,11 +44,13 @@ a single record in the categories table:
 
 INSERT INTO Categories (category_name)
 VALUES ('Electronics');
+
 ---------------------------------
 a single record in the products table:
 
 INSERT INTO Products (product_name, company_id, description, price, active)
 VALUES ('Smartphone X', 1, 'Latest model smartphone', 699.99, TRUE);
+
 ---------------------------------
 a single record in the warranties table:
 
@@ -57,7 +59,7 @@ VALUES (12, 1);
 ---------------------------------
 a single record in the products_categories table:
 
-INSERT INTO products_categories_xref (product_id, category_id)
+INSERT INTO ProductsCategoriesXref (product_id, category_id)
 VALUES (1, 1);
 =====================================
 
@@ -98,7 +100,7 @@ A single category record by ID and all its associated products:
 
 SELECT c.category_id, c.category_name, p.product_id, p.product_name
 FROM Categories c
-LEFT JOIN products_categories_xref pcx ON c.category_id = pcx.category_id
+LEFT JOIN ProductsCategoriesXref pcx ON c.category_id = pcx.category_id
 LEFT JOIN Products p ON pcx.product_id = p.product_id
 WHERE c.category_id = 1;
 ---------------------------------
@@ -109,7 +111,7 @@ SELECT p.product_id, p.product_name, p.description, p.price, p.active,
        c.category_id, c.category_name
 FROM Products p
 LEFT JOIN Warranties w ON p.product_id = w.product_id
-LEFT JOIN products_categories_xref pcx ON p.product_id = pcx.product_id
+LEFT JOIN ProductsCategoriesXref pcx ON p.product_id = pcx.product_id
 LEFT JOIN Categories c ON pcx.category_id = c.category_id
 WHERE p.product_id = 1;
 ----------------------------------
@@ -125,7 +127,7 @@ Update one or more fields in a Companies record:
 
 UPDATE Companies
 SET company_name = 'TechCorp International',
-    active = FALSE
+active = FALSE
 WHERE company_id = 1;
 ----------------------------
 Update one or more fields in a Categories record:
@@ -138,8 +140,8 @@ Update one or more fields in a Products record:
 
 UPDATE Products
 SET product_name = 'Smartphone X Pro',
-    price = 799.99,
-    active = TRUE
+price = 799.99,
+active = TRUE
 WHERE product_id = 1;
 --------------------------------
 Update one or more fields in a Warranties record:
@@ -150,7 +152,10 @@ WHERE warranty_id = 1;
 ------------------------------
 Update one or more fields in a ProductsCategoriesXref record:
 
-UPDATE products_categories_xref
+INSERT INTO categories (category_name)
+VALUES ('New Category');
+
+UPDATE ProductsCategoriesXref
 SET category_id = 2
 WHERE product_id = 1 AND category_id = 1;
 =====================================
